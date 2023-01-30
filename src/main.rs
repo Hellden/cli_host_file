@@ -1,5 +1,5 @@
 #![allow(unused_variables)]
-use clap::{Args, Command, Parser, Subcommand};
+use clap::{Args, Parser, Subcommand};
 
 fn about() {
     print!("##### Welcome cli-host_file #####");
@@ -21,38 +21,36 @@ struct Cli {
     #[command(subcommand)]
     command: Commands,
 }
-
 #[derive(Subcommand)]
 enum Commands {
-    /// Add line at host file
+    /// Add row in host file
     Add(Add),
-    /// Delete line specifie of host file
-    Delete(Delete),
+    Delete{
+        /// Name row to delete
+        name:String,
+        ip:String
+    }
 }
 
 #[derive(Args)]
 struct Add {
-    /// Name add host
     name: String,
-    /// Ip linked at name host
-    ip: String,
+    ip: String
 }
-#[derive(Args)]
-struct Delete {
-    /// Name host at delete
-    name: String,
-    /// Optional: Specifiy ip address at name host
-    ip: Option<String>,
-}
+
 
 fn main() {
     about();
-    // ###############################
     let cli = Cli::parse();
 
-    match cli.commands {
-        Commands::Add => {
-            println!("adds")
+    // You can check for the existence of subcommands, and if found use their
+    // matches just as you would the top level cmd
+    match cli.command {
+        Commands::Add(payload) => {
+            println!("'myapp add' was used, name is: {} {}", payload.name, payload.ip)
+        },
+        Commands::Delete { name, ip } => {
+            println!("It's live {} {}", name, ip)
         }
     }
 }
