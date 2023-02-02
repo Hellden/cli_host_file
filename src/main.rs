@@ -1,10 +1,9 @@
 #![allow(unused_variables)]
 use clap::{Args, Parser, Subcommand};
 use std::{
-    fs::File,
-    io::{BufRead, BufReader},
+    fs::{File, OpenOptions},
+    io::{BufRead, BufReader, Write},
 };
-
 fn about() {
     print!("##### Welcome cli-host_file #####");
     println!(
@@ -36,7 +35,7 @@ enum Commands {
     },
 }
 
-#[derive(Args)]
+#[derive(Args, Clone)]
 struct Add {
     ip: String,
     name: String,
@@ -48,11 +47,9 @@ fn main() {
     about();
     let cli = Cli::parse();
 
-    // You can check for the existence of subcommands, and if found use their
-    // matches just as you would the top level cmd
     match cli.command {
         Commands::Add(payload) => {
-            if !check_lines(payload) {
+            if !check_lines(payload.clone()) {
                 add_line(payload);
             }
         }
@@ -88,11 +85,16 @@ fn check_lines(payload: Add) -> bool {
 }
 
 fn add_line(payload: Add) {
-    let file = match File::open(FILEPATH) {
+    let mut file = match OpenOptions::new().append(true).open(FILEPATH) {
         Ok(file) => file,
         Err(e) => {
             println!("Impossible d'ouvrir le fichier hosts: {}", e);
             return;
         }
     };
+
+    let content = String::from("\n") + &payload.ip + "\t" + &payload.name;
+
+    // Write text
+    file.write_all(content.as_bytes()).unwrap();
 }
